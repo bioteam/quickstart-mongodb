@@ -1,3 +1,64 @@
+# sharded-mongodb
+
+This repository contains the CF templates to create a sharded mongo-db deployment.
+The repository was forked from the `quickstart-mongodb` to be used as a baseline. It contains two git submodules and it is recommended that these are pulled too with the following command:
+
+```
+git submodule update --init
+```
+
+The templates use a default S3 bucket if no other one is specified. Since we had to make modifications to the templates, a new S3 bucket named `mongo-db-sharded` was created in the `BMS Gen3` account so that the templates can be picked up from there instead.
+
+The script to `upload_artifacts_to_s3.sh` uploads the necessary templates to the bucket.
+
+TODO: Maybe use `aws cloudformation package` capability
+
+# Usage
+In order to use this templates it is recommended to has the AWS CLI installed. (see AWSdocumentation on how to install it)
+
+As part of the deployment, after the ec2-instances are launched, some initialization scripts need to be run on the VMs (i.e. to install mondo-db binaries, etc.) These scripts can be found in the `scripts/` directory.
+
+The steps to deploy mongo-db are:
+
+1. 
+
+# Useful commands
+
+To create the stack from a local file:
+
+```
+aws cloudformation create-stack --stack-name <stack-name> --template-body file://<path-to-file> --parameters file://<path-to-template-file> --capabilities CAPABILITY_IAM
+```
+
+For example:
+
+```
+aws cloudformation create-stack --stack-name mongo-db-bruno --template-body file://./templates/mongodb-master.template --parameters file://./parameters/parameters.json --capabilities CAPABILITY_IAM
+```
+
+To create a stack using the template uploaded the S3 bucket:
+
+```
+aws cloudformation create-stack --stack-name mongo-db-bruno --template-url https://mongo-db-sharded.s3.us-west-1.amazonaws.com/mongo-db-sharded/templates/mongodb-master.template --parameters file://./parameters/parameters.json --capabilities CAPABILITY_IAM
+```
+
+You can look at the templates for more parameters that can be specified in the parameters file.
+
+
+To list the stacks:
+
+```
+aws cloudformation list-stacks
+```
+
+To delete a stack:
+
+```
+aws cloudformation delete-stack --stack-name <stack-name>
+```
+
+
+
 # quickstart-mongodb
 ## MongoDB on the AWS Cloud
 
