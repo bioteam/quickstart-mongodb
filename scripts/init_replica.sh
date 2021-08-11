@@ -30,10 +30,10 @@ getValue() {
 version=${MongoDBVersion}
 
 if [ -z "$version" ] ; then
-  version="4.2"
+  version="5.0"
 fi
 
-if [ "$version" == "4.0" ] || [ "$version" == "4.2" ];
+if [ "$version" == "4.0" ] || [ "$version" == "4.2" ] || [ "$version" == "5.0" ];
 then
 echo "[mongodb-org-${version}]
 name=MongoDB Repository
@@ -182,7 +182,7 @@ EOF
 
 echo "net:" > mongod.conf
 echo "  port:" >> mongod.conf
-if [ "$version" == "3.6" ] || [ "$version" == "4.0" ] || [ "$version" == "4.2" ]; then
+if [ "$version" == "3.6" ] || [ "$version" == "4.0" ] || [ "$version" == "4.2" ] || [ "$version" == "5.0" ]; then
     echo "  bindIpAll: true" >> mongod.conf
 fi
 echo "" >> mongod.conf

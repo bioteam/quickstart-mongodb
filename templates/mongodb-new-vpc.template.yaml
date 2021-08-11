@@ -303,10 +303,11 @@ Parameters:
       - gp2
       - io1
   MongoDBVersion:
-    Default: '4.2'
+    Default: '5.0'
     Type: String
     Description: MongoDB version
     AllowedValues:
+      - '5.0'
       - '4.2'
       - '4.0'
       - '3.6'

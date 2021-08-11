@@ -152,8 +152,9 @@
         "MongoDBVersion": {
             "Description": "MongoDB version",
             "Type": "String",
-            "Default": "4.2",
+            "Default": "5.0",
             "AllowedValues": [
+                "5.0",
                 "4.2",
                 "4.0",
                 "3.6",
@@ -628,7 +629,8 @@
                                 },
                                 " >> config.sh\n",
                                 "mkdir -p /mongo_auth \n",
-                                "./init.sh > install.log 2>&1 \n",
+                                "#./init.sh > install.log 2>&1 \n",
+                                "echo \"skipped init\" >> install.log \n",
                                 "#  Cleanup \n",
                                 "#rm -rf *\n",
                                 "chown -R ec2-user:ec2-user /home/ec2-user/ \n",
