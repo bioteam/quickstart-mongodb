@@ -12,6 +12,7 @@ The templates use a default S3 bucket if no other one is specified. Since we had
 The script to `upload_artifacts_to_s3.sh` uploads the necessary templates to the bucket.
 
 TODO: Maybe use `aws cloudformation package` capability
+TODO: Use DNS names to the instances instead of IP addresses.
 
 # Usage
 In order to use this templates it is recommended to has the AWS CLI installed. (see AWSdocumentation on how to install it)

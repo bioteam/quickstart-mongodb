@@ -65,6 +65,7 @@ yum install -y libcgroup libcgroup-tools sysstat munin-node
 NODE_TYPE=`getValue Name`
 IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 SHARD=s`getValue ReplicaShardIndex`
+IS_CONFIG_NODE=`getValue IsConfigNode`
 NODES=`getValue ClusterReplicaSetCount`
 
 #  Do NOT use timestamps here!!
@@ -179,8 +180,15 @@ EOF
 #################################################################
 #mkdir /var/run/mongod
 #chown mongod:mongod /var/run/mongod
+touch mongod.conf
+echo "sharding:" >> mongod.conf
+if [ "$IS_CONFIG_NODE" == "true" ]; then
+    echo "  clusterRole: configsvr" >> mongod.conf
+else
+    echo "  clusterRole: shardsvr" >> mongod.conf
+fi
 
-echo "net:" > mongod.conf
+echo "net:" >> mongod.conf
 echo "  port:" >> mongod.conf
 if [ "$version" == "3.6" ] || [ "$version" == "4.0" ] || [ "$version" == "4.2" ] || [ "$version" == "5.0" ]; then
     echo "  bindIpAll: true" >> mongod.conf
@@ -262,7 +270,11 @@ port=27017
 cp mongod.conf /etc/mongod.conf
 sed -i "s/.*port:.*/  port: ${port}/g" /etc/mongod.conf
 echo "replication:" >> /etc/mongod.conf
-echo "  replSetName: ${SHARD}" >> /etc/mongod.conf
+if [ "$IS_CONFIG_NODE" == "true" ]; then
+    echo "  replSetName: config" >> /etc/mongod.conf
+else
+    echo "  replSetName: ${SHARD}" >> /etc/mongod.conf
+fi
 
 echo CGROUP_DAEMON="memory:mongod" > /etc/sysconfig/mongod
 
@@ -331,7 +343,7 @@ EOF
     # Configure the replica sets, set this host as Primary with
     # highest priority
     #################################################################
-    if [ "${NODES}" == "3" ]; then
+    if [ "${NODES}" == "3" ] && [ "${IS_CONFIG_NODE}" == "false" ]; then #TODO: Fix so that we can have 3 config servers
         port=27017
         conf="{\"_id\" : \"${SHARD}\", \"version\" : 1, \"members\" : ["
         node=1
@@ -371,6 +383,7 @@ EOF
         conf="{\"_id\" : \"${SHARD}\", \"version\" : 1, \"members\" : ["
         conf="${conf}{\"_id\" : 1, \"host\" :\"${IP}:${port}\", \"priority\":${priority}}"
         conf=${conf}"]}"
+        echo ${conf}
 
 mongo --port ${port} << EOF
 rs.initiate(${conf})

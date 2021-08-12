@@ -108,6 +108,11 @@
             "Description": "Instance Index",
             "Type": "String"
         },
+        "IsConfigNode": {
+            "Description": "Is this node part of the config replica set",
+            "Type": "String",
+            "Default": "false"
+        },
         "ReplicaShardIndex": {
             "Description": "Shard Index",
             "Type": "String"
@@ -423,6 +428,12 @@
                         "Key": "NodeReplicaSetIndex",
                         "Value": {
                             "Ref": "NodeReplicaSetIndex"
+                        }
+                    },
+                    {
+                        "Key": "IsConfigNode",
+                        "Value": {
+                            "Ref": "IsConfigNode"
                         }
                     },
                     {

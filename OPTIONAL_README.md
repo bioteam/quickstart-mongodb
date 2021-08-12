@@ -27,3 +27,5 @@
         - NodeReplicaSetIndex
 - Once the setup is complete the dynamoDb tables are deleted.
 
+# Workflow added to create a sharded DB cluster
+- Create a config server replica set

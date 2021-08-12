@@ -111,7 +111,7 @@ Parameters:
   ReplicaShardIndex:
     Description: Shard Index of this replica set
     Type: String
-    Default: '0'
+    Default: '1'
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     Default: aws-quickstart
