@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Deploy MongoDB Replica Set on AWS (existing VPC). (qs-1qtlo6bf9)",
+    "Description": "Deploy MongoDB Sharded Replica Sets and mongos on AWS (existing VPC). (qs-1qtlo6bf9)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -301,10 +301,10 @@
         },
         "UsingDefaultBucket": {
             "Fn::Equals": [
-            {
-                "Ref": "QSS3BucketName"
-            },
-            "aws-quickstart"
+                {
+                    "Ref": "QSS3BucketName"
+                },
+                "aws-quickstart"
             ]
         }
     },
@@ -435,12 +435,20 @@
                                     ],
                                     "Resource": {
                                         "Fn::Sub": [
-                                           "arn:${AWS::Partition}:s3:::${S3Bucket}/${QSS3KeyPrefix}*",
-                                           {
-                                               "S3Bucket": {
-                                                   "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
-                                               }
-                                           }
+                                            "arn:${AWS::Partition}:s3:::${S3Bucket}/${QSS3KeyPrefix}*",
+                                            {
+                                                "S3Bucket": {
+                                                    "Fn::If": [
+                                                        "UsingDefaultBucket",
+                                                        {
+                                                            "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                                        },
+                                                        {
+                                                            "Ref": "QSS3BucketName"
+                                                        }
+                                                    ]
+                                                }
+                                            }
                                         ]
                                     }
                                 },
@@ -494,10 +502,26 @@
                         "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
                         {
                             "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
                             },
                             "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -512,9 +536,7 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
-                    },
+                    "ClusterReplicaSetCount": "1",
                     "Iops": {
                         "Ref": "Iops"
                     },
@@ -570,7 +592,7 @@
         },
         "PrimaryReplicaNodeConfig0WaitForNodeInstall": {
             "Type": "AWS::CloudFormation::WaitCondition",
-            "DependsOn": "PrimaryReplicaNode0",
+            "DependsOn": "PrimaryReplicaNodeConfig0",
             "Properties": {
                 "Handle": {
                     "Ref": "PrimaryReplicaNodeConfig0WaitForNodeInstallWaitHandle"
@@ -578,23 +600,34 @@
                 "Timeout": "3600"
             }
         },
-        // Start of Primary of first SHARD Replica Set
-        "PrimaryReplicaNode0WaitForNodeInstallWaitHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle",
-            "Properties": {}
-        },
-        "PrimaryReplicaNode0": {
+        "Shard0": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-replicaset.template",
                         {
                             "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
                             },
                             "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -630,204 +663,13 @@
                     "NodeInstanceType": {
                         "Ref": "NodeInstanceType"
                     },
-                    "NodeSubnet": {
+                    "PrimaryNodeSubnet": {
                         "Ref": "PrimaryNodeSubnet"
                     },
-                    "MongoDBServerSecurityGroupID": {
-                        "Ref": "MongoDBServerSecurityGroup"
-                    },
-                    "MongoDBServersSecurityGroupID": {
-                        "Ref": "MongoDBServersSecurityGroup"
-                    },
-                    "MongoDBNodeIAMProfileID": {
-                        "Ref": "MongoDBNodeIAMProfile"
-                    },
-                    "VPC": {
-                        "Ref": "VPC"
-                    },
-                    "VolumeSize": {
-                        "Ref": "VolumeSize"
-                    },
-                    "VolumeType": {
-                        "Ref": "VolumeType"
-                    },
-                    "StackName": {
-                        "Ref": "AWS::StackName"
-                    },
-                    "ReplicaNodeNameTag": "PrimaryReplicaNode0",
-                    "NodeReplicaSetIndex": "0",
-                    "ReplicaShardIndex": {
-                        "Ref": "ReplicaShardIndex"
-                    },
-                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
-                        "Ref": "PrimaryReplicaNode0WaitForNodeInstallWaitHandle"
-                    }
-                }
-            }
-        },
-        "PrimaryReplicaNode0WaitForNodeInstall": {
-            "Type": "AWS::CloudFormation::WaitCondition",
-            "DependsOn": "PrimaryReplicaNode0",
-            "Properties": {
-                "Handle": {
-                    "Ref": "PrimaryReplicaNode0WaitForNodeInstallWaitHandle"
-                },
-                "Timeout": "3600"
-            }
-        },
-        "SecondaryReplicaNode0WaitForNodeInstallWaitHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle",
-            "Properties": {},
-            "Condition": "CreateThreeReplicaSet"
-        },
-        "SecondaryReplicaNode0": {
-            "Condition": "CreateThreeReplicaSet",
-            "Type": "AWS::CloudFormation::Stack",
-            "Properties": {
-                "TemplateURL": {
-                    "Fn::Sub": [
-                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
-                        {
-                            "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
-                            },
-                            "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
-                            }
-                        }
-                    ]
-                },
-                "Parameters": {
-                    "QSS3BucketName": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "QSS3KeyPrefix": {
-                        "Ref": "QSS3KeyPrefix"
-                    },
-                    "QSS3BucketRegion": {
-                        "Ref": "QSS3BucketRegion"
-                    },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
-                    },
-                    "Iops": {
-                        "Ref": "Iops"
-                    },
-                    "KeyName": {
-                        "Ref": "KeyPairName"
-                    },
-                    "MongoDBVersion": {
-                        "Ref": "MongoDBVersion"
-                    },
-                    "MongoDBAdminUsername": {
-                        "Ref": "MongoDBAdminUsername"
-                    },
-                    "MongoDBAdminPassword": {
-                        "Ref": "MongoDBAdminPassword"
-                    },
-                    "NodeInstanceType": {
-                        "Ref": "NodeInstanceType"
-                    },
-                    "NodeSubnet": {
+                    "Secondary0NodeSubnet": {
                         "Ref": "Secondary0NodeSubnet"
                     },
-                    "MongoDBServerSecurityGroupID": {
-                        "Ref": "MongoDBServerSecurityGroup"
-                    },
-                    "MongoDBServersSecurityGroupID": {
-                        "Ref": "MongoDBServersSecurityGroup"
-                    },
-                    "MongoDBNodeIAMProfileID": {
-                        "Ref": "MongoDBNodeIAMProfile"
-                    },
-                    "VPC": {
-                        "Ref": "VPC"
-                    },
-                    "VolumeSize": {
-                        "Ref": "VolumeSize"
-                    },
-                    "VolumeType": {
-                        "Ref": "VolumeType"
-                    },
-                    "StackName": {
-                        "Ref": "AWS::StackName"
-                    },
-                    "ReplicaNodeNameTag": "SecondaryReplicaNode0",
-                    "NodeReplicaSetIndex": "1",
-                    "ReplicaShardIndex": {
-                        "Ref": "ReplicaShardIndex"
-                    },
-                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
-                        "Ref": "SecondaryReplicaNode0WaitForNodeInstallWaitHandle"
-                    }
-                }
-            }
-        },
-        "SecondaryReplicaNode0WaitForNodeInstall": {
-            "Type": "AWS::CloudFormation::WaitCondition",
-            "Condition": "CreateThreeReplicaSet",
-            "DependsOn": "SecondaryReplicaNode0",
-            "Properties": {
-                "Handle": {
-                    "Ref": "SecondaryReplicaNode0WaitForNodeInstallWaitHandle"
-                },
-                "Timeout": "3600"
-            }
-        },
-        "SecondaryReplicaNode1WaitForNodeInstallWaitHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle",
-            "Properties": {},
-            "Condition": "CreateThreeReplicaSet"
-        },
-        "SecondaryReplicaNode1": {
-            "Condition": "CreateThreeReplicaSet",
-            "Type": "AWS::CloudFormation::Stack",
-            "Properties": {
-                "TemplateURL": {
-                    "Fn::Sub": [
-                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
-                        {
-                            "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
-                            },
-                            "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
-                            }
-                        }
-                    ]
-                },
-                "Parameters": {
-                    "QSS3BucketName": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "QSS3KeyPrefix": {
-                        "Ref": "QSS3KeyPrefix"
-                    },
-                    "QSS3BucketRegion": {
-                        "Ref": "QSS3BucketRegion"
-                    },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
-                    },
-                    "Iops": {
-                        "Ref": "Iops"
-                    },
-                    "KeyName": {
-                        "Ref": "KeyPairName"
-                    },
-                    "MongoDBVersion": {
-                        "Ref": "MongoDBVersion"
-                    },
-                    "MongoDBAdminUsername": {
-                        "Ref": "MongoDBAdminUsername"
-                    },
-                    "MongoDBAdminPassword": {
-                        "Ref": "MongoDBAdminPassword"
-                    },
-                    "NodeInstanceType": {
-                        "Ref": "NodeInstanceType"
-                    },
-                    "NodeSubnet": {
+                    "Secondary1NodeSubnet": {
                         "Ref": "Secondary1NodeSubnet"
                     },
                     "MongoDBServerSecurityGroupID": {
@@ -851,26 +693,12 @@
                     "StackName": {
                         "Ref": "AWS::StackName"
                     },
-                    "ReplicaNodeNameTag": "SecondaryReplicaNode1",
-                    "NodeReplicaSetIndex": "2",
-                    "ReplicaShardIndex": {
-                        "Ref": "ReplicaShardIndex"
-                    },
-                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
-                        "Ref": "SecondaryReplicaNode1WaitForNodeInstallWaitHandle"
-                    }
+                    // For the config replica set we don't use numbers
+                    "IsConfigReplicaSet": "false",
+                    "IsShardReplicaSet": "true",
+                    "IsMongoReplicaSet": "false",
+                    "ReplicaShardIndex": "0"
                 }
-            }
-        },
-        "SecondaryReplicaNode1WaitForNodeInstall": {
-            "Type": "AWS::CloudFormation::WaitCondition",
-            "Condition": "CreateThreeReplicaSet",
-            "DependsOn": "SecondaryReplicaNode1",
-            "Properties": {
-                "Handle": {
-                    "Ref": "SecondaryReplicaNode1WaitForNodeInstallWaitHandle"
-                },
-                "Timeout": "3600"
             }
         }
     },
@@ -878,8 +706,8 @@
         "PrimaryReplicaNodeIp": {
             "Value": {
                 "Fn::GetAtt": [
-                    "PrimaryReplicaNode0",
-                    "Outputs.NodePrivateIp"
+                    "Shard0",
+                    "Outputs.PrimaryReplicaNodeIp"
                 ]
             },
             "Description": "Private IP Address of Primary Replica Node"
@@ -887,8 +715,8 @@
         "SecondaryReplicaNode0Ip": {
             "Value": {
                 "Fn::GetAtt": [
-                    "SecondaryReplicaNode0",
-                    "Outputs.NodePrivateIp"
+                    "Shard0",
+                    "Outputs.SecondaryReplicaNode0Ip"
                 ]
             },
             "Description": "Private IP Address of Secondary Replica 0 Node",
@@ -897,8 +725,8 @@
         "SecondaryReplicaNode1Ip": {
             "Value": {
                 "Fn::GetAtt": [
-                    "SecondaryReplicaNode1",
-                    "Outputs.NodePrivateIp"
+                    "Shard0",
+                    "Outputs.SecondaryReplicaNode1Ip"
                 ]
             },
             "Description": "Private IP Address of Secondary Replica 1 Node",

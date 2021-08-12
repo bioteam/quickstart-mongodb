@@ -66,6 +66,8 @@ NODE_TYPE=`getValue Name`
 IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 SHARD=s`getValue ReplicaShardIndex`
 IS_CONFIG_NODE=`getValue IsConfigNode`
+IS_SHARD_NODE=`getValue IsShardNode`
+IS_MONGO_NODE=`getValue IsMongoNode`
 NODES=`getValue ClusterReplicaSetCount`
 
 #  Do NOT use timestamps here!!
@@ -184,8 +186,10 @@ touch mongod.conf
 echo "sharding:" >> mongod.conf
 if [ "$IS_CONFIG_NODE" == "true" ]; then
     echo "  clusterRole: configsvr" >> mongod.conf
-else
+elif ["$IS_SHARD_NODE" == "true" ]; then
     echo "  clusterRole: shardsvr" >> mongod.conf
+elif ["$IS_MONGO_NODE" == "true" ]; then
+    echo "configDB:"
 fi
 
 echo "net:" >> mongod.conf
