@@ -64,11 +64,28 @@ yum install -y libcgroup libcgroup-tools sysstat munin-node
 #################################################################
 NODE_TYPE=`getValue Name`
 IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-SHARD=s`getValue ReplicaShardIndex`
 IS_CONFIG_NODE=`getValue IsConfigNode`
 IS_SHARD_NODE=`getValue IsShardNode`
 IS_MONGO_NODE=`getValue IsMongoNode`
-NODES=`getValue ClusterReplicaSetCount`
+CONFIG_NODES=`getValue ClusterConfigReplicaSetCount`
+SHARD_NODES=`getValue ClusterShardReplicaSetCount`
+MONGO_NODES=`getValue ClusterMongoReplicaSetCount`
+
+SHARD=`getValue ReplicaShardIndex`
+if [ "${IS_SHARD_NODE}" == "true" ]; then
+    SHARD=s${SHARD}
+fi
+
+if [ "$IS_CONFIG_NODE" == "true" ]; then
+    port=27019
+    NODES=${CONFIG_NODES}
+elif [ "$IS_SHARD_NODE" == "true" ]; then
+    port=27018
+    NODES=${SHARD_NODES}
+elif [ "$IS_MONGO_NODE" == "true" ]; then
+    port=27017
+    NODES=${MONGO_NODES}
+fi
 
 #  Do NOT use timestamps here!!
 # This has to be unique across multiple runs!
@@ -77,20 +94,21 @@ UNIQUE_NAME=MONGODB_${TABLE_NAMETAG}_${VPC}
 #################################################################
 #  Wait for all the nodes to synchronize so we have all IP addrs
 #################################################################
-if [ "${NODE_TYPE}" == "Primary" ]; then
-    ./orchestrator.sh -c -n "${SHARD}_${UNIQUE_NAME}"
-    ./orchestrator.sh -s "WORKING" -n "${SHARD}_${UNIQUE_NAME}"
-    ./orchestrator.sh -w "WORKING=${NODES}" -n "${SHARD}_${UNIQUE_NAME}"
-    IPADDRS=$(./orchestrator.sh -g -n "${SHARD}_${UNIQUE_NAME}")
-    read -a IPADDRS <<< $IPADDRS
-else
-    ./orchestrator.sh -b -n "${SHARD}_${UNIQUE_NAME}"
-    ./orchestrator.sh -w "WORKING=1" -n "${SHARD}_${UNIQUE_NAME}"
-    ./orchestrator.sh -s "WORKING" -n "${SHARD}_${UNIQUE_NAME}"
-    NODE_TYPE="Secondary"
-    ./orchestrator.sh -w "WORKING=${NODES}" -n "${SHARD}_${UNIQUE_NAME}"
+if [ "${IS_MONGO_NODE}" == "false" ]; then
+    if [[ "${NODE_TYPE}" == *Primary ]]; then
+        ./orchestrator.sh -c -n "${SHARD}_${UNIQUE_NAME}"
+        ./orchestrator.sh -s "WORKING" -n "${SHARD}_${UNIQUE_NAME}"
+        ./orchestrator.sh -w "WORKING=${NODES}" -n "${SHARD}_${UNIQUE_NAME}"
+        IPADDRS=$(./orchestrator.sh -g -n "${SHARD}_${UNIQUE_NAME}")
+        read -a IPADDRS <<< $IPADDRS
+    else
+        ./orchestrator.sh -b -n "${SHARD}_${UNIQUE_NAME}"
+        ./orchestrator.sh -w "WORKING=1" -n "${SHARD}_${UNIQUE_NAME}"
+        ./orchestrator.sh -s "WORKING" -n "${SHARD}_${UNIQUE_NAME}"
+        NODE_TYPE="Secondary"
+        ./orchestrator.sh -w "WORKING=${NODES}" -n "${SHARD}_${UNIQUE_NAME}"
+    fi
 fi
-
 
 #################################################################
 # Make filesystems, set ulimits and block read ahead on ALL nodes
@@ -127,9 +145,9 @@ enable_all_listen() {
 
 check_primary() {
     expected_state=$1
-    master_substr=\"ismaster\"\ :\ ${expected_state}
+    master_substr=ismaster:\ ${expected_state}
     while true; do
-      check_master=$( mongo --eval "printjson(db.isMaster())" )
+      check_master=$( mongosh --port ${port} --eval "printjson(db.isMaster())" )
       log "${check_master}..."
       if [[ $check_master == *"$master_substr"* ]]; then
         log "Node is in desired state, proceed with security setup"
@@ -153,10 +171,9 @@ setup_security_common() {
 
 setup_security_primary() {
     DDB_TABLE=$1
-    port=27017
     MONGO_PASSWORD=$( cat /tmp/mongo_pass.txt )
 
-mongo --port ${port} << EOF
+mongosh --port ${port} << EOF
 use admin;
 db.createUser(
   {
@@ -178,18 +195,33 @@ EOF
 }
 
 #################################################################
+# Mongo Type servers need to wait for the config servers to be secured
+#################################################################
+if [ "$IS_MONGO_NODE" == "true" ]; then
+    ./orchestrator.sh -w "SECURED=${CONFIG_NODES}" -n "config_${UNIQUE_NAME}"
+    CONFIG_IPADDRS=$(./orchestrator.sh -g -n "config_${UNIQUE_NAME}")
+    read -a CONFIG_IPADDRS <<< $CONFIG_IPADDRS
+fi
+
+#################################################################
 # Setup MongoDB servers and config nodes
 #################################################################
 #mkdir /var/run/mongod
 #chown mongod:mongod /var/run/mongod
-touch mongod.conf
-echo "sharding:" >> mongod.conf
+echo "sharding:" > mongod.conf
 if [ "$IS_CONFIG_NODE" == "true" ]; then
     echo "  clusterRole: configsvr" >> mongod.conf
-elif ["$IS_SHARD_NODE" == "true" ]; then
+elif [ "$IS_SHARD_NODE" == "true" ]; then
     echo "  clusterRole: shardsvr" >> mongod.conf
-elif ["$IS_MONGO_NODE" == "true" ]; then
-    echo "configDB:"
+elif [ "$IS_MONGO_NODE" == "true" ]; then
+    conf="  configDB: config/"
+    for addr in "${CONFIG_IPADDRS[@]}"
+    do
+        conf="${conf}${addr},"
+    done
+    conf=${conf::-1}
+    echo "Configuring mongos with: ${conf}"
+    echo ${conf} >> mongod.conf
 fi
 
 echo "net:" >> mongod.conf
@@ -269,16 +301,12 @@ chown -R mongod:mongod /data
 # Clone the mongod config file and create cgroups for mongod
 #################################################################
 c=0
-port=27017
 
 cp mongod.conf /etc/mongod.conf
 sed -i "s/.*port:.*/  port: ${port}/g" /etc/mongod.conf
 echo "replication:" >> /etc/mongod.conf
-if [ "$IS_CONFIG_NODE" == "true" ]; then
-    echo "  replSetName: config" >> /etc/mongod.conf
-else
-    echo "  replSetName: ${SHARD}" >> /etc/mongod.conf
-fi
+echo "  replSetName: ${SHARD}" >> /etc/mongod.conf
+
 
 echo CGROUP_DAEMON="memory:mongod" > /etc/sysconfig/mongod
 
@@ -317,7 +345,7 @@ systemctl start mongod
 #################################################################
 #  Primaries initiate replica sets
 #################################################################
-if [[ "$NODE_TYPE" == "Primary" ]]; then
+if [[ "$NODE_TYPE" == *Primary ]]; then
 
     #################################################################
     # Wait unitil all the hosts for the replica set are responding
@@ -330,9 +358,9 @@ if [[ "$NODE_TYPE" == "Primary" ]]; then
         echo ${addr}:${port}
         while [ true ]; do
 
-            echo "mongo --host ${addr} --port ${port}"
+            echo "mongosh --host ${addr} --port ${port}"
 
-mongo --host ${addr} --port ${port} << EOF
+mongosh --host ${addr} --port ${port} << EOF
 use admin
 EOF
 
@@ -347,8 +375,7 @@ EOF
     # Configure the replica sets, set this host as Primary with
     # highest priority
     #################################################################
-    if [ "${NODES}" == "3" ] && [ "${IS_CONFIG_NODE}" == "false" ]; then #TODO: Fix so that we can have 3 config servers
-        port=27017
+    if [ "${NODES}" == "3" ]; then
         conf="{\"_id\" : \"${SHARD}\", \"version\" : 1, \"members\" : ["
         node=1
         for addr in "${IPADDRS[@]}"
@@ -370,9 +397,9 @@ EOF
         done
 
         conf=${conf}"]}"
-        echo ${conf}
+        echo "Initiliazing MongoDb with conf: ${conf}"
 
-mongo --port ${port} << EOF
+mongosh --port ${port} << EOF
 rs.initiate(${conf})
 EOF
 
@@ -381,15 +408,14 @@ EOF
             ./signalFinalStatus.sh 1
         fi
     else
-        port=27017
 
         priority=10
         conf="{\"_id\" : \"${SHARD}\", \"version\" : 1, \"members\" : ["
         conf="${conf}{\"_id\" : 1, \"host\" :\"${IP}:${port}\", \"priority\":${priority}}"
         conf=${conf}"]}"
-        echo ${conf}
+        echo "Initiliazing MongoDb with conf: ${conf}"
 
-mongo --port ${port} << EOF
+mongosh --port ${port} << EOF
 rs.initiate(${conf})
 EOF
 
@@ -410,7 +436,8 @@ EOF
     setup_security_primary "${SHARD}_${UNIQUE_NAME}"
 
     ./orchestrator.sh -w "SECURED=${NODES}" -n "${SHARD}_${UNIQUE_NAME}"
-    ./orchestrator.sh -d -n "${SHARD}_${UNIQUE_NAME}"
+    # Mongo servers need this table to know the IPs of the Config Servers
+    #./orchestrator.sh -d -n "${SHARD}_${UNIQUE_NAME}"
     rm /tmp/mongo_pass.txt
 else
     #################################################################
@@ -425,7 +452,6 @@ else
     systemctl start mongod
     ./orchestrator.sh -s "SECURED" -n "${SHARD}_${UNIQUE_NAME}"
     rm /tmp/mongo_pass.txt
-
 fi
 
 # TBD - Add custom CloudWatch Metrics for MongoDB

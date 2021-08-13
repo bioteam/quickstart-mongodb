@@ -29,7 +29,9 @@
                         "default": "MongoDB Database Configuration"
                     },
                     "Parameters": [
-                        "ClusterReplicaSetCount",
+                        "ClusterConfigReplicaSetCount",
+                        "ClusterShardReplicaSetCount",
+                        "ClusterMongoReplicaSetCount",
                         "Iops",
                         "MongoDBVersion",
                         "MongoDBAdminUsername",
@@ -55,8 +57,14 @@
                 "BastionSecurityGroupID": {
                     "default": "Bastion Security Group ID"
                 },
-                "ClusterReplicaSetCount": {
-                    "default": "Cluster Replica Set Count"
+                "ClusterConfigReplicaSetCount": {
+                    "default": "Cluster Config Replica Set Count"
+                },
+                "ClusterShardReplicaSetCount": {
+                    "default": "Cluster Shard Replica Set Count"
+                },
+                "ClusterMongoReplicaSetCount": {
+                    "default": "Cluster Mongo Replica Set Count"
                 },
                 "Iops": {
                     "default": "Iops"
@@ -114,8 +122,26 @@
             "Description": "ID of the Bastion Security Group (e.g., sg-7f16e910)",
             "Type": "AWS::EC2::SecurityGroup::Id"
         },
-        "ClusterReplicaSetCount": {
-            "Description": "Number of Replica Set Members. Choose 1 or 3",
+        "ClusterConfigReplicaSetCount": {
+            "Description": "Number of Config Replica Set Members. Choose 1 or 3",
+            "Type": "String",
+            "Default": "3",
+            "AllowedValues": [
+                "1",
+                "3"
+            ]
+        },
+        "ClusterShardReplicaSetCount": {
+            "Description": "Number of Shard Replica Set Members. Choose 1 or 3",
+            "Type": "String",
+            "Default": "3",
+            "AllowedValues": [
+                "1",
+                "3"
+            ]
+        },
+        "ClusterMongoReplicaSetCount": {
+            "Description": "Number of Mongo Replica Set Members. Choose 1 or 3",
             "Type": "String",
             "Default": "3",
             "AllowedValues": [
@@ -294,7 +320,7 @@
         "CreateThreeReplicaSet": {
             "Fn::Equals": [
                 {
-                    "Ref": "ClusterReplicaSetCount"
+                    "Ref": "ClusterShardReplicaSetCount"
                 },
                 "3"
             ]
@@ -532,8 +558,14 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
+                    "ClusterConfigReplicaSetCount": {
+                        "Ref": "ClusterConfigReplicaSetCount"
+                    },
+                    "ClusterShardReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
+                    "ClusterMongoReplicaSetCount": {
+                        "Ref": "ClusterMongoReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -633,8 +665,14 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
+                    "ClusterConfigReplicaSetCount": {
+                        "Ref": "ClusterConfigReplicaSetCount"
+                    },
+                    "ClusterShardReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
+                    "ClusterMongoReplicaSetCount": {
+                        "Ref": "ClusterMongoReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -735,8 +773,14 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
-                    "ClusterReplicaSetCount": {
-                        "Ref": "ClusterReplicaSetCount"
+                    "ClusterConfigReplicaSetCount": {
+                        "Ref": "ClusterConfigReplicaSetCount"
+                    },
+                    "ClusterShardReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
+                    "ClusterMongoReplicaSetCount": {
+                        "Ref": "ClusterMongoReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"

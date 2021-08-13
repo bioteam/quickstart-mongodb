@@ -4,7 +4,15 @@
         "ParameterValue": "sg-09c8db66c9664e043"
     },
     {
-        "ParameterKey": "ClusterReplicaSetCount",
+        "ParameterKey": "ClusterConfigReplicaSetCount",
+        "ParameterValue": "3"
+    },
+    {
+        "ParameterKey": "ClusterShardReplicaSetCount",
+        "ParameterValue": "3"
+    },
+    {
+        "ParameterKey": "ClusterMongoReplicaSetCount",
         "ParameterValue": "3"
     },
     {

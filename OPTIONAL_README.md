@@ -27,5 +27,28 @@
         - NodeReplicaSetIndex
 - Once the setup is complete the dynamoDb tables are deleted.
 
+# DynamoDB
+
+In order to coordinate their progress nodes make use of DynamoDB.
+First, the primary nodes of each replicaSet (config, mongo, shard0, shard1, ...) create a table per replicaset withe the name ~ s<REPLSETNAME>_MONGODB_<STACK_NAME>-<REPL_SET_NAME>-<VPC_ID> (i.e. sconfig_MONGODB__mongo-db-bruno-ConfigReplicaSet-1SRDVUXD2XXNW_vpc-053bc644903df0916)
+
+And create an entry with the following fields
+
+```
+{
+    "PrivateIpAddress: "x.x.x.x",
+    "InstanceId": <INSTANCE_ID>,
+    "Status": <WORKING | SECURED | FINISHED>
+}
+```
+
+To wait for the secondary nodes, the primary node runs a loop of `aws dynamodb scan --table-name <TABLE_NAME>` parses the output and waits until the count becomes 3.
+
 # Workflow added to create a sharded DB cluster
 - Create a config server replica set
+
+# Default Mongo Ports
+
+27017 for mongod (if not a shard member or a config server member) or mongos instance
+27018 if mongod is a shard member
+27019 if mongod is a config server member
