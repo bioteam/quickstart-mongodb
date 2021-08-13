@@ -16,10 +16,6 @@
         "ParameterValue": "98.35.89.183/32"
     },
     {
-        "ParameterKey": "MongoDBAdminPassword",
-        "ParameterValue": "password"
-    },
-    {
         "ParameterKey": "QSS3BucketName",
         "ParameterValue": "mongo-db-sharded"
     },

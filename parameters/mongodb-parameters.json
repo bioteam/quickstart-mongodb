@@ -1,0 +1,54 @@
+[
+    {
+        "ParameterKey": "BastionSecurityGroupID",
+        "ParameterValue": "sg-09c8db66c9664e043"
+    },
+    {
+        "ParameterKey": "ClusterReplicaSetCount",
+        "ParameterValue": "3"
+    },
+    {
+        "ParameterKey": "MongoDBVersion",
+        "ParameterValue": "5.0"
+    },
+    {
+        "ParameterKey": "MongoDBAdminPassword",
+        "ParameterValue": "password"
+    }, 
+    {
+        "ParameterKey": "QSS3BucketName",
+        "ParameterValue": "mongo-db-sharded"
+    },
+    {
+        "ParameterKey": "QSS3BucketRegion",
+        "ParameterValue": "us-west-1"
+    },
+    {
+        "ParameterKey": "QSS3KeyPrefix",
+        "ParameterValue": "mongo-db-sharded/"
+    },
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "bruno_key"
+    },
+    {
+        "ParameterKey": "VolumeSize",
+        "ParameterValue": "40"
+    },
+    {
+        "ParameterKey": "VPC",
+        "ParameterValue": "vpc-053bc644903df0916"
+    },
+    {
+        "ParameterKey": "PrimaryNodeSubnet",
+        "ParameterValue": "subnet-07271f6c3dc88fba4"
+    },
+    {
+        "ParameterKey": "Secondary0NodeSubnet",
+        "ParameterValue": "subnet-0100da66a73a98530"
+    },
+    {
+        "ParameterKey": "Secondary1NodeSubnet",
+        "ParameterValue": "subnet-0100da66a73a98530"
+    }
+]

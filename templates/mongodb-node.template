@@ -110,18 +110,15 @@
         },
         "IsConfigNode": {
             "Description": "Is this node part of the config replica set",
-            "Type": "String",
-            "Default": "false"
+            "Type": "String"
         },
         "IsShardNode": {
             "Description": "Is this node part of the shard replica set",
-            "Type": "String",
-            "Default": "false"
+            "Type": "String"
         },
         "IsMongoNode": {
             "Description": "Is this node part of the mongo replica set",
-            "Type": "String",
-            "Default": "false"
+            "Type": "String"
         },
         "ReplicaShardIndex": {
             "Description": "Shard Index",

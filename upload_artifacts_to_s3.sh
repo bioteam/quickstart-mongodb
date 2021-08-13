@@ -15,5 +15,5 @@ aws s3 cp submodules/quickstart-linux-bastion/scripts s3://mongo-db-sharded/mong
 aws s3 cp build/templates/mongodb.template s3://mongo-db-sharded/mongo-db-sharded/templates/
 aws s3 cp build/templates/mongodb-replicaset.template s3://mongo-db-sharded/mongo-db-sharded/templates/
 aws s3 cp templates/mongodb-node.template s3://mongo-db-sharded/mongo-db-sharded/templates/
-aws s3 cp templates/mongodb-master.template s3://mongo-db-sharded/mongo-db-sharded/templates/
+aws s3 cp templates/mongodb-vpc.template s3://mongo-db-sharded/mongo-db-sharded/templates/
 aws s3 cp scripts s3://mongo-db-sharded/mongo-db-sharded/scripts --recursive

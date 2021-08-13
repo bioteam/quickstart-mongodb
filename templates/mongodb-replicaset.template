@@ -2,6 +2,10 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Deploy MongoDB Replica Set on AWS (existing VPC). (qs-1qtlo6bf9)",
     "Parameters": {
+        "ReplicaSetName": {
+            "Description": "Name of this replica set",
+            "Type": "String"
+        },
         "IsConfigReplicaSet": {
             "Description": "Is this a replica set of config servers",
             "Type": "String",
@@ -226,10 +230,10 @@
         },
         "UsingDefaultBucket": {
             "Fn::Equals": [
-            {
-                "Ref": "QSS3BucketName"
-            },
-            "aws-quickstart"
+                {
+                    "Ref": "QSS3BucketName"
+                },
+                "aws-quickstart"
             ]
         }
     },
@@ -247,10 +251,26 @@
                         "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
                         {
                             "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
                             },
                             "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -310,7 +330,17 @@
                     "StackName": {
                         "Ref": "AWS::StackName"
                     },
-                    "ReplicaNodeNameTag": "PrimaryReplicaNode0",
+                    "ReplicaNodeNameTag": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "ReplicaSetName"
+                                },
+                                "PrimaryReplicaNode0"
+                            ]
+                        ]
+                    },
                     "NodeReplicaSetIndex": "0",
                     "IsConfigNode": {
                         "Ref": "IsConfigReplicaSet"
@@ -354,10 +384,26 @@
                         "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
                         {
                             "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
                             },
                             "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -417,8 +463,27 @@
                     "StackName": {
                         "Ref": "AWS::StackName"
                     },
-                    "ReplicaNodeNameTag": "SecondaryReplicaNode0",
+                    "ReplicaNodeNameTag": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "ReplicaSetName"
+                                },
+                                "SecondaryReplicaNode0"
+                            ]
+                        ]
+                    },
                     "NodeReplicaSetIndex": "1",
+                    "IsConfigNode": {
+                        "Ref": "IsConfigReplicaSet"
+                    },
+                    "IsShardNode": {
+                        "Ref": "IsShardReplicaSet"
+                    },
+                    "IsMongoNode": {
+                        "Ref": "IsMongoReplicaSet"
+                    },
                     "ReplicaShardIndex": {
                         "Ref": "ReplicaShardIndex"
                     },
@@ -453,10 +518,26 @@
                         "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-node.template",
                         {
                             "S3Region": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
                             },
                             "S3Bucket": {
-                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -516,8 +597,27 @@
                     "StackName": {
                         "Ref": "AWS::StackName"
                     },
-                    "ReplicaNodeNameTag": "SecondaryReplicaNode1",
+                    "ReplicaNodeNameTag": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "ReplicaSetName"
+                                },
+                                "SecondaryReplicaNode1"
+                            ]
+                        ]
+                    },
                     "NodeReplicaSetIndex": "2",
+                    "IsConfigNode": {
+                        "Ref": "IsConfigReplicaSet"
+                    },
+                    "IsShardNode": {
+                        "Ref": "IsShardReplicaSet"
+                    },
+                    "IsMongoNode": {
+                        "Ref": "IsMongoReplicaSet"
+                    },
                     "ReplicaShardIndex": {
                         "Ref": "ReplicaShardIndex"
                     },
