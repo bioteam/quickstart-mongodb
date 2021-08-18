@@ -44,6 +44,16 @@ And create an entry with the following fields
 
 To wait for the secondary nodes, the primary node runs a loop of `aws dynamodb scan --table-name <TABLE_NAME>` parses the output and waits until the count becomes 3.
 
+# How does the cluster gets secured
+The way the cluster is secured is by: 
+- The primary replica creates an auth key using the `orcherstrator -k` command in setup_security_common()
+- It publishes this key in DynamoDB
+- It creates a file named `/mongo_auth/mongodb.key` 
+- It updates the `mongod.conf` configuration by adding the field `processManagement.security.keyFile`
+- Restarts mongod.
+
+- The secondary replicas fetch this key from DynamoDB
+
 # Workflow added to create a sharded DB cluster
 - Create a config server replica set
 
@@ -52,3 +62,55 @@ To wait for the secondary nodes, the primary node runs a loop of `aws dynamodb s
 27017 for mongod (if not a shard member or a config server member) or mongos instance
 27018 if mongod is a shard member
 27019 if mongod is a config server member
+
+# MongoDB Topologies
+
+There are a few different topologies that can be used to deploy MongoDB. The two big brad categories are :
+- Replica Set
+- Sharded
+
+Given the expected load, it was decided to deploy a Sharded MongoDB cluster. Within a Sharded MongoDB deployment there are few alternatives regarding the deployment of the mongos.
+The following website gives a good description of the different possibilities:
+
+```
+https://www.percona.com/blog/2017/11/14/common-mongodb-topologies/
+```
+
+Within the sharded deployment, there are three alternatives on how to deploy the `mongos`:
+- Flat Mongos (not load balanced)
+- Load Balanced
+- App Centric
+
+The main disadvantage of using a "Load Balanced" architecture is that "new drivers have issues with getMores. By this we mean the getMore selects a new random connection, and the load balancer can’t be sure which mongos should get it. Thus it has a one in N (number of mongos) chance of selecting the right one, or getting a “Cursor Not Found” error."
+There is a JIRA ticket that is about warning users about not placing load balancer between the DB and the application for this very reason:
+
+```
+https://jira.mongodb.org/browse/DOCS-12322
+```
+
+The following two websites also describe similar issue:
+
+```
+https://github.com/strapi/strapi/issues/5839
+```
+
+```
+https://github.com/parse-community/parse-server/issues/5226
+```
+
+
+The main disadvantage of using an app centric "mongos" architecture is that mongos tend to use a lot of resources.
+
+After a discussion with John we agreed on the following points:
+
+So after some research, I think we should avoid an ALB/NLB in front of mongos . Alternatives:
+- DNS round-robin or SRV records for mongos instances
+- Random mongos node selection in Monarch
+- Multiple mongos URIs in the connection config string
+- Run mongos in the monarch container, maybe a shell out on startup from the monarchd binary
+- Don't worry about scaling mongos for now
+I think any of these are viable paths forward.
+
+# Other
+
+The file `/etc/sysconfig/mongod` is created by the `init_replica.sh` script.
