@@ -12,8 +12,8 @@
         "ParameterValue": "3"
     },
     {
-        "ParameterKey": "ClusterMongoReplicaSetCount",
-        "ParameterValue": "3"
+        "ParameterKey": "ClusterMongosReplicaSetCount",
+        "ParameterValue": "1"
     },
     {
         "ParameterKey": "MongoDBVersion",

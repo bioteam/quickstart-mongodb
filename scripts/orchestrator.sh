@@ -68,6 +68,8 @@ usage() {
         -b Block until table is created
         -d Delete table
         -s Update "Status" column
+        -k Create key
+        -f Fetch key
         -u Insert/Update Item (key=value pair)
         -n Table Name (optional. Default name is CFN stackname)
         -q Query number of nodes in a given state

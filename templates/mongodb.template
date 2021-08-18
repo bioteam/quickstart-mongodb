@@ -31,7 +31,7 @@
                     "Parameters": [
                         "ClusterConfigReplicaSetCount",
                         "ClusterShardReplicaSetCount",
-                        "ClusterMongoReplicaSetCount",
+                        "ClusterMongosReplicaSetCount",
                         "Iops",
                         "MongoDBVersion",
                         "MongoDBAdminUsername",
@@ -63,7 +63,7 @@
                 "ClusterShardReplicaSetCount": {
                     "default": "Cluster Shard Replica Set Count"
                 },
-                "ClusterMongoReplicaSetCount": {
+                "ClusterMongosReplicaSetCount": {
                     "default": "Cluster Mongo Replica Set Count"
                 },
                 "Iops": {
@@ -140,7 +140,7 @@
                 "3"
             ]
         },
-        "ClusterMongoReplicaSetCount": {
+        "ClusterMongosReplicaSetCount": {
             "Description": "Number of Mongo Replica Set Members. Choose 1 or 3",
             "Type": "String",
             "Default": "3",
@@ -558,14 +558,17 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
+                    "ClusterReplicaSetCount": {
+                        "Ref": "ClusterConfigReplicaSetCount"
+                    },
                     "ClusterConfigReplicaSetCount": {
                         "Ref": "ClusterConfigReplicaSetCount"
                     },
                     "ClusterShardReplicaSetCount": {
                         "Ref": "ClusterShardReplicaSetCount"
                     },
-                    "ClusterMongoReplicaSetCount": {
-                        "Ref": "ClusterMongoReplicaSetCount"
+                    "ClusterMongosReplicaSetCount": {
+                        "Ref": "ClusterMongosReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -617,13 +620,13 @@
                     },
                     "IsConfigReplicaSet": "true",
                     "IsShardReplicaSet": "false",
-                    "IsMongoReplicaSet": "false",
+                    "IsMongosReplicaSet": "false",
                     "ReplicaShardIndex": "config",
                     "ReplicaSetName": "Config"
                 }
             }
         },
-        "MongoReplicaSet": {
+        "MongosReplicaSet": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
                 "TemplateURL": {
@@ -665,14 +668,17 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
+                    "ClusterReplicaSetCount": {
+                        "Ref": "ClusterMongosReplicaSetCount"
+                    },
                     "ClusterConfigReplicaSetCount": {
                         "Ref": "ClusterConfigReplicaSetCount"
                     },
                     "ClusterShardReplicaSetCount": {
                         "Ref": "ClusterShardReplicaSetCount"
                     },
-                    "ClusterMongoReplicaSetCount": {
-                        "Ref": "ClusterMongoReplicaSetCount"
+                    "ClusterMongosReplicaSetCount": {
+                        "Ref": "ClusterMongosReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -724,10 +730,9 @@
                     },
                     "IsConfigReplicaSet": "false",
                     "IsShardReplicaSet": "false",
-                    "IsMongoReplicaSet": "true",
-                    "ReplicaShardIndex": "mongo",
-                    "ReplicaSetName": "Mongo"
-
+                    "IsMongosReplicaSet": "true",
+                    "ReplicaShardIndex": "mongos",
+                    "ReplicaSetName": "Mongos"
                 }
             }
         },
@@ -773,14 +778,17 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
+                    "ClusterReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
                     "ClusterConfigReplicaSetCount": {
                         "Ref": "ClusterConfigReplicaSetCount"
                     },
                     "ClusterShardReplicaSetCount": {
                         "Ref": "ClusterShardReplicaSetCount"
                     },
-                    "ClusterMongoReplicaSetCount": {
-                        "Ref": "ClusterMongoReplicaSetCount"
+                    "ClusterMongosReplicaSetCount": {
+                        "Ref": "ClusterMongosReplicaSetCount"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -833,7 +841,7 @@
                     // For the config replica set we don't use numbers
                     "IsConfigReplicaSet": "false",
                     "IsShardReplicaSet": "true",
-                    "IsMongoReplicaSet": "false",
+                    "IsMongosReplicaSet": "false",
                     "ReplicaShardIndex": "0",
                     "ReplicaSetName": "Shard0"
                 }

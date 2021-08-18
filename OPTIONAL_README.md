@@ -113,4 +113,5 @@ I think any of these are viable paths forward.
 
 # Other
 
-The file `/etc/sysconfig/mongod` is created by the `init_replica.sh` script.
+- The file `/etc/sysconfig/mongod` is created by the `init_replica.sh` script.
+- The `mongos.service` should go in `/usr/lib/systemd/system/`

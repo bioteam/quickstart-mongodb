@@ -116,7 +116,7 @@
             "Description": "Is this node part of the shard replica set",
             "Type": "String"
         },
-        "IsMongoNode": {
+        "IsMongosNode": {
             "Description": "Is this node part of the mongo replica set",
             "Type": "String"
         },
@@ -170,7 +170,7 @@
                 "3"
             ]
         },
-        "ClusterMongoReplicaSetCount": {
+        "ClusterMongosReplicaSetCount": {
             "Description": "Number of Mongo Replica Set Members. Choose 1 or 3",
             "Type": "String",
             "Default": "3",
@@ -456,9 +456,9 @@
                         }
                     },
                     {
-                        "Key": "ClusterMongoReplicaSetCount",
+                        "Key": "ClusterMongosReplicaSetCount",
                         "Value": {
-                            "Ref": "ClusterMongoReplicaSetCount"
+                            "Ref": "ClusterMongosReplicaSetCount"
                         }
                     },
                     {
@@ -480,9 +480,9 @@
                         }
                     },
                     {
-                        "Key": "IsMongoNode",
+                        "Key": "IsMongosNode",
                         "Value": {
-                            "Ref": "IsMongoNode"
+                            "Ref": "IsMongosNode"
                         }
                     },
                     {
@@ -580,6 +580,20 @@
                                     "Ref": "QSS3KeyPrefix"
                                 },
                                 "scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages ",
+                                "--region ",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                                },
+                                "\n",
+                                "aws s3 cp s3://",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                "scripts/mongos/mongos.service /usr/lib/systemd/system/ ",
                                 "--region ",
                                 {
                                     "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
