@@ -491,7 +491,6 @@ EOF
 
         # The primary nodes signal to mongos that the replica sets are ready
         ./orchestrator.sh -b -n "mongos_${UNIQUE_NAME}"
-        sleep 5
         ./orchestrator.sh -s "DONE" -n "mongos_${UNIQUE_NAME}"
     else
         #################################################################

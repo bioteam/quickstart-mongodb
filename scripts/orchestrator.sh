@@ -192,6 +192,7 @@ WaitUntilTableLive() {
       echo "Master has created table!"
       break
     fi
+    sleep 5
   done
 }
 
@@ -306,7 +307,8 @@ InsertMyKeyValueS() {
 }
 
 FetchAuthKey() {
-    AuthKey=$(${AWS_CMD} dynamodb scan --table-name ${TABLE_NAME} | ${JQ_COMMAND}  '.Items[]|.AuthKey|.S' | grep -v "null")
+    AuthKey=$(while ! ${AWS_CMD} dynamodb scan --table-name ${TABLE_NAME} | ${JQ_COMMAND} '.Items[]|.AuthKey|.S' | grep -v null; do echo "Waiting for auth key to be created">&2; done)
+    AuthKey=${AuthKey//* }
     AuthKey=$(echo ${AuthKey} | sed s/\"//g)
     AuthKey=$(echo ${AuthKey} | sed s/\ //g)
     echo ${AuthKey}

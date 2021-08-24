@@ -714,7 +714,7 @@
                                 },
                                 " >> config.sh\n",
                                 "mkdir -p /mongo_auth \n",
-                                "#./init.sh > install.log 2>&1 \n",
+                                "./init.sh > install.log 2>&1 \n",
                                 "echo \"skipped init\" >> install.log \n",
                                 "#  Cleanup \n",
                                 "#rm -rf *\n",
