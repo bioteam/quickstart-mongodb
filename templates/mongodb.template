@@ -862,6 +862,120 @@
                     "ReplicaSetName": "Shard0"
                 }
             }
+        },
+        "Shard1": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/mongodb-replicaset.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketRegion"
+                                    }
+                                ]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": [
+                                    "UsingDefaultBucket",
+                                    {
+                                        "Fn::Sub": "${QSS3BucketName}-${AWS::Region}"
+                                    },
+                                    {
+                                        "Ref": "QSS3BucketName"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "TotalShards": {
+                        "Ref": "TotalShards"
+                    },
+                    "ClusterReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
+                    "ClusterConfigReplicaSetCount": {
+                        "Ref": "ClusterConfigReplicaSetCount"
+                    },
+                    "ClusterShardReplicaSetCount": {
+                        "Ref": "ClusterShardReplicaSetCount"
+                    },
+                    "ClusterMongosReplicaSetCount": {
+                        "Ref": "ClusterMongosReplicaSetCount"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "MongoDBVersion": {
+                        "Ref": "MongoDBVersion"
+                    },
+                    "MongoDBAdminUsername": {
+                        "Ref": "MongoDBAdminUsername"
+                    },
+                    "MongoDBAdminPassword": {
+                        "Ref": "MongoDBAdminPassword"
+                    },
+                    "NodeInstanceType": {
+                        "Ref": "NodeInstanceType"
+                    },
+                    "PrimaryNodeSubnet": {
+                        "Ref": "PrimaryNodeSubnet"
+                    },
+                    "Secondary0NodeSubnet": {
+                        "Ref": "Secondary0NodeSubnet"
+                    },
+                    "Secondary1NodeSubnet": {
+                        "Ref": "Secondary1NodeSubnet"
+                    },
+                    "MongoDBServerSecurityGroupID": {
+                        "Ref": "MongoDBServerSecurityGroup"
+                    },
+                    "MongoDBServersSecurityGroupID": {
+                        "Ref": "MongoDBServersSecurityGroup"
+                    },
+                    "MongoDBNodeIAMProfileID": {
+                        "Ref": "MongoDBNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    // For the config replica set we don't use numbers
+                    "IsConfigReplicaSet": "false",
+                    "IsShardReplicaSet": "true",
+                    "IsMongosReplicaSet": "false",
+                    "ReplicaShardIndex": "1",
+                    "ReplicaSetName": "Shard1"
+                }
+            }
         }
     },
     "Outputs": {

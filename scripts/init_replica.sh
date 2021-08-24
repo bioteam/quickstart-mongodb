@@ -491,6 +491,7 @@ EOF
 
         # The primary nodes signal to mongos that the replica sets are ready
         ./orchestrator.sh -b -n "mongos_${UNIQUE_NAME}"
+        sleep 5
         ./orchestrator.sh -s "DONE" -n "mongos_${UNIQUE_NAME}"
     else
         #################################################################
@@ -513,7 +514,7 @@ else
     systemctl start mongos
     ./orchestrator.sh -s "SECURED" -n "${SHARD}_${UNIQUE_NAME}"
 
-    # Primary mongos waits for sll shards to be secured
+    # Primary mongos waits for all shards to be secured
     # and adds the shards
     if [[ "${NODE_TYPE}" == *Primary ]]; then
         TOTAL_COUNT="$((${TOTAL_SHARDS}+1))" # Wait for Shards and Config Replica Set
