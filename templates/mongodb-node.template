@@ -120,6 +120,10 @@
             "Description": "Is this node part of the mongo replica set",
             "Type": "String"
         },
+        "TotalShards": {
+            "Description": "Number of shards in the cluster (It should be consistent with the number of shards in the template)",
+            "Type": "String"
+        },
         "ReplicaShardIndex": {
             "Description": "Shard Index",
             "Type": "String"
@@ -483,6 +487,12 @@
                         "Key": "IsMongosNode",
                         "Value": {
                             "Ref": "IsMongosNode"
+                        }
+                    },
+                    {
+                        "Key": "TotalShards",
+                        "Value": {
+                            "Ref": "TotalShards"
                         }
                     },
                     {

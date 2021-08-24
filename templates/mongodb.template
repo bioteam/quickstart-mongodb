@@ -57,6 +57,9 @@
                 "BastionSecurityGroupID": {
                     "default": "Bastion Security Group ID"
                 },
+                "TotalShards": {
+                    "default": "Number of shards in the cluster (It should be consistent with the number of shards in the template)"
+                },
                 "ClusterConfigReplicaSetCount": {
                     "default": "Cluster Config Replica Set Count"
                 },
@@ -121,6 +124,10 @@
         "BastionSecurityGroupID": {
             "Description": "ID of the Bastion Security Group (e.g., sg-7f16e910)",
             "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "TotalShards": {
+            "Description": "Number of shards in the MongoDB cluster. It should be consistent with the number of shards declared in the template.",
+            "Type": "String"
         },
         "ClusterConfigReplicaSetCount": {
             "Description": "Number of Config Replica Set Members. Choose 1 or 3",
@@ -558,6 +565,9 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
+                    "TotalShards": {
+                        "Ref": "TotalShards"
+                    },
                     "ClusterReplicaSetCount": {
                         "Ref": "ClusterConfigReplicaSetCount"
                     },
@@ -668,6 +678,9 @@
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
                     },
+                    "TotalShards": {
+                        "Ref": "TotalShards"
+                    },
                     "ClusterReplicaSetCount": {
                         "Ref": "ClusterMongosReplicaSetCount"
                     },
@@ -777,6 +790,9 @@
                     },
                     "QSS3BucketRegion": {
                         "Ref": "QSS3BucketRegion"
+                    },
+                    "TotalShards": {
+                        "Ref": "TotalShards"
                     },
                     "ClusterReplicaSetCount": {
                         "Ref": "ClusterShardReplicaSetCount"

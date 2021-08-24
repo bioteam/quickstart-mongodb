@@ -4,6 +4,10 @@
         "ParameterValue": "sg-09c8db66c9664e043"
     },
     {
+        "ParameterKey": "TotalShards",
+        "ParameterValue": "1"
+    },
+    {
         "ParameterKey": "ClusterConfigReplicaSetCount",
         "ParameterValue": "3"
     },

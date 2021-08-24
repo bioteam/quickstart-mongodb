@@ -69,6 +69,7 @@ CONFIG_NODES=`getValue ClusterConfigReplicaSetCount`
 SHARD_NODES=`getValue ClusterShardReplicaSetCount`
 MONGO_NODES=`getValue ClusterMongosReplicaSetCount`
 SHARD=`getValue ReplicaShardIndex`
+TOTAL_SHARDS=`getValue TotalShards`
 
 if [ "${IS_MONGOS_NODE}" == "false" ]; then
     yum install -y mongodb-org mongodb-org-server mongodb-org-tools
@@ -487,6 +488,10 @@ EOF
         # Mongo servers need this table to know the IPs of the Config Servers
         #./orchestrator.sh -d -n "${SHARD}_${UNIQUE_NAME}"
         rm /tmp/mongo_pass.txt
+
+        # The primary nodes signal to mongos that the replica sets are ready
+        ./orchestrator.sh -b -n "mongos_${UNIQUE_NAME}"
+        ./orchestrator.sh -s "DONE" -n "mongos_${UNIQUE_NAME}"
     else
         #################################################################
         #  Update status of Secondary to FINISHED
@@ -507,6 +512,31 @@ else
     setup_security_common "config_${UNIQUE_NAME}"
     systemctl start mongos
     ./orchestrator.sh -s "SECURED" -n "${SHARD}_${UNIQUE_NAME}"
+
+    # Primary mongos waits for sll shards to be secured
+    # and adds the shards
+    if [[ "${NODE_TYPE}" == *Primary ]]; then
+        TOTAL_COUNT="$((${TOTAL_SHARDS}+1))" # Wait for Shards and Config Replica Set
+        echo "Mongos Primary waiting for all replica sets to be DONE..."
+        ./orchestrator.sh -w "DONE=${TOTAL_COUNT}" -n "${SHARD}_${UNIQUE_NAME}"
+        echo "Adding shards..."
+        shard_index=0
+        while [ $shard_index -lt ${TOTAL_SHARDS} ]; do
+            SHARD_IPADDRS=$(./orchestrator.sh -g -n "s${shard_index}_${UNIQUE_NAME}")
+            read -a SHARD_IPADDRS <<< $SHARD_IPADDRS
+            shard_conf="\"s${shard_index}/"
+            for addr in "${SHARD_IPADDRS[@]}"; do
+                shard_conf=${shard_conf}"${addr}:27018,"
+            done
+            shard_conf=${shard_conf::-1}"\""
+            echo "Adding Shard: "${shard_conf}
+            mongosh --port ${port} -u admin -p $(</tmp/mongo_pass.txt) << EOF
+sh.addShard(${shard_conf})
+EOF
+            (( shard_index++ ))
+        done
+    fi
+
     rm /tmp/mongo_pass.txt
 fi
 # TBD - Add custom CloudWatch Metrics for MongoDB
