@@ -368,7 +368,7 @@
                         "Ref": "VolumeType"
                     },
                     "StackName": {
-                        "Ref": "AWS::StackName"
+                        "Ref": "StackName"
                     },
                     "ReplicaNodeNameTag": {
                         "Fn::Join": [
@@ -510,7 +510,7 @@
                         "Ref": "VolumeType"
                     },
                     "StackName": {
-                        "Ref": "AWS::StackName"
+                        "Ref": "StackName"
                     },
                     "ReplicaNodeNameTag": {
                         "Fn::Join": [
@@ -653,7 +653,7 @@
                         "Ref": "VolumeType"
                     },
                     "StackName": {
-                        "Ref": "AWS::StackName"
+                        "Ref": "StackName"
                     },
                     "ReplicaNodeNameTag": {
                         "Fn::Join": [

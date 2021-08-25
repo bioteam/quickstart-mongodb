@@ -649,10 +649,9 @@
                                         "_",
                                         [
                                             "export TABLE_NAMETAG=",
-                                            ""
-                                           // {
-                                          //      "Ref": "StackName"
-                                           // }
+                                            {
+                                                "Ref": "StackName"
+                                            }
                                         ]
                                     ]
                                 },
