@@ -370,6 +370,14 @@
                     {
                         "IpProtocol": "tcp",
                         "FromPort": 27017,
+                        "ToPort": 27017,
+                        "SourceSecurityGroupId": {
+                            "Ref": "BastionSecurityGroupID"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 27017,
                         "ToPort": 27030,
                         "SourceSecurityGroupId": {
                             "Ref": "MongoDBServerAccessSecurityGroup"
