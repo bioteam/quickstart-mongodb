@@ -111,6 +111,12 @@
                 "VPC": {
                     "default": "VPC"
                 },
+                "HostedZoneId": {
+                    "default": "HostedZoneId"
+                },
+                "MongosDNSName": {
+                    "default": "DNS Record name for Mongos"
+                },
                 "VolumeSize": {
                     "default": "Volume Size"
                 },
@@ -309,6 +315,14 @@
         "VPC": {
             "Type": "AWS::EC2::VPC::Id",
             "Description": "VPC-ID of your existing Virtual Private Cloud (VPC) where you want to depoy MongoDB cluster."
+        },
+        "MongosDNSName": {
+            "Type": "String",
+            "Description": "DNS Record name for Mongos"
+        },
+        "HostedZoneId": {
+            "Type": "AWS::Route53::HostedZone::Id",
+            "Description": "ID of the Hosted Zone to create the Mongos DNS record."
         },
         "PrimaryNodeSubnet": {
             "Type": "AWS::EC2::Subnet::Id",
@@ -983,6 +997,25 @@
                     "ReplicaShardIndex": "1",
                     "ReplicaSetName": "Shard1"
                 }
+            }
+        },
+        "MongosDNSRecord" : {
+            "Type" : "AWS::Route53::RecordSet",
+            "Properties" : {
+                "HostedZoneId" : {
+                    "Ref": "HostedZoneId"
+                },
+                "Name" : {
+                    "Ref": "MongosDNSName"
+                },
+                "Type" : "A",
+                "TTL" : "900",
+                "ResourceRecords" : [{
+                    "Fn::GetAtt" : [
+                        "MongosReplicaSet",
+                        "Outputs.PrimaryReplicaNodeIp"
+                    ]
+                }]
             }
         }
     },

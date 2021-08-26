@@ -62,5 +62,13 @@
     {
         "ParameterKey": "Secondary1NodeSubnet",
         "ParameterValue": "subnet-0100da66a73a98530"
+    },
+    {
+        "ParameterKey": "HostedZoneId",
+        "ParameterValue": "Z08517032MQKHW3HDRVYH"
+    },
+    {
+        "ParameterKey": "MongosDNSName",
+        "ParameterValue": "db.ips.bms.com"
     }
 ]
